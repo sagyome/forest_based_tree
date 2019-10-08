@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f9201c4e-8774-42cb-be16-980b1c56501e" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/Analyze results.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Analyze results.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experiment main notebook.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Experiment main notebook.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ExperimentSetting.py" beforeDir="false" afterPath="$PROJECT_DIR$/ExperimentSetting.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -17,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ExperimentSetting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1035">
-              <caret line="69" column="82" selection-start-line="69" selection-start-column="82" selection-end-line="69" selection-end-column="82" />
+            <state relative-caret-position="965">
+              <caret line="67" column="46" selection-start-line="67" selection-start-column="46" selection-end-line="67" selection-end-column="46" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -102,6 +100,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
@@ -175,8 +174,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ExperimentSetting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1035">
-          <caret line="69" column="82" selection-start-line="69" selection-start-column="82" selection-end-line="69" selection-end-column="82" />
+        <state relative-caret-position="965">
+          <caret line="67" column="46" selection-start-line="67" selection-start-column="46" selection-end-line="67" selection-end-column="46" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

@@ -66,8 +66,7 @@ class ExperimentSetting():
 
             #Training random forest
             start_temp=datetime.datetime.now()
-            #rf = RandomForestClassifier(n_estimators=num_of_estimators,min_samples_leaf=max(1,int(0.002*len(train_x))),**self.fixed_params)
-            rf = RandomForestClassifier(n_estimators=num_of_estimators,max_depth=4, **self.fixed_params)
+            rf = RandomForestClassifier(n_estimators=num_of_estimators,max_depth=4,min_samples_leaf=max(1,int(0.002*len(train_x))), **self.fixed_params)
 
             rf.fit(train_x, train_y)
 
