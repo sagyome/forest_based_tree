@@ -3,9 +3,8 @@ from SplittingFunctions import *
 from scipy.stats import entropy
 EPSILON=0.000001
 class Node():
-    def __init__(self,mask,parallel=False):
+    def __init__(self,mask):
         self.mask = mask
-        self.parallel = parallel
     def split(self,df):
         #if np.sum(self.mask)==1 or self.has_same_class(df):
         if np.sum(self.mask) == 1:
@@ -13,19 +12,16 @@ class Node():
             self.right=None
             return
         self.features = [int(i.split('_')[0]) for i in df.keys() if 'upper' in str(i)]
-        #
-        if self.parallel:
-            self.split_feature, self.split_value = select_split_feature_parallel(df,self.features,self.mask)
-        else:
-            self.split_feature, self.split_value = self.select_split_feature(df)
+
+        self.split_feature, self.split_value = self.select_split_feature(df)
         self.create_mask(df)
         is_splitable=self.is_splitable()
         if is_splitable==False:
             self.left = None
             self.right = None
             return
-        self.left=Node(list(np.logical_and(self.mask,np.logical_or(self.left_mask,self.both_mask))),self.parallel)
-        self.right = Node(list(np.logical_and(self.mask,np.logical_or(self.right_mask,self.both_mask))),self.parallel)
+        self.left=Node(list(np.logical_and(self.mask,np.logical_or(self.left_mask,self.both_mask))))
+        self.right = Node(list(np.logical_and(self.mask,np.logical_or(self.right_mask,self.both_mask))))
         self.left.split(df)
         self.right.split(df)
 

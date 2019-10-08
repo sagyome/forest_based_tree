@@ -7,7 +7,7 @@ from pruningFunctions import *
 
 class ConjunctionSet():
     def __init__(self,feature_names,original_data, pruning_x, pruning_y,
-                 model, feature_types, amount_of_branches_threshold,filter_approach, exclusion_starting_point=10,
+                 model, feature_types, amount_of_branches_threshold,filter_approach='probability', exclusion_starting_point=10,
                  minimal_forest_size=10,exclusion_threshold=0.8):
         self.amount_of_branches_threshold = amount_of_branches_threshold
         self.model = model

@@ -16,46 +16,28 @@ import pickle
 
 
 class ExperimentSetting():
-    def __init__(self,number_of_branches_threshold,df_names,number_of_estimators_list,fixed_params,
-                 num_of_iterations=50,filter_approaches=['probability'],parallels=[False],minimal_exclusion_iteration=[10],
-                 minimum_estimators=[10],exclusion_thresholds=[0.8]):
+    def __init__(self,number_of_branches_threshold,df_names,number_of_estimators,fixed_params,
+                 num_of_iterations=30):
         self.num_of_iterations=num_of_iterations
-        self.exclusion_thresholds = exclusion_thresholds
         self.number_of_branches_threshold = number_of_branches_threshold
         self.df_names = df_names
         self.fixed_params = fixed_params
-        self.number_of_esitmators = number_of_estimators_list
-        self.filter_approaches = filter_approaches
-        self.parallels = parallels
-        self.minimal_exclusion_iteration=minimal_exclusion_iteration
-        self.minimum_estimators = minimum_estimators
+        self.number_of_estimators = number_of_estimators
     def run(self):
         self.experiments = []
         for threshold in self.number_of_branches_threshold:
             for df_name in self.df_names:
                 df, x_columns, y_column, feature_types = get_dataset_by_string(df_name)
-                for num_of_estimators in self.number_of_esitmators:
-                    for filter_approach in self.filter_approaches:
-                        for parallel in self.parallels:
-                            for min_exclusion in self.minimal_exclusion_iteration:
-                                for min_pruning_estimators in self.minimum_estimators:
-                                    for exclusion_threshold in self.exclusion_thresholds:
-                                        d = {}
-                                        d['exclusion_start_point'] = min_exclusion
-                                        d['number_of_estimators'] = num_of_estimators
-                                        d['max_number_of_branches'] = threshold
-                                        d['df_name'] = df_name
-                                        d['filter_approach'] = filter_approach
-                                        d['parallel'] = parallel
-                                        d['minimum_estimators']=min_pruning_estimators
-                                        d['exclusion_threshold']=exclusion_threshold
-                                        print(d)
-                                    self.run_experiment(threshold, df, x_columns, y_column, feature_types, d)
+                d = {}
+                d['max_number_of_branches'] = threshold
+                d['df_name'] = df_name
+                d['number_of_estimators'] = self.number_of_estimators
+                print(d)
+            self.run_experiment(threshold, df, x_columns, y_column, feature_types, d)
     def run_experiment(self,branch_probability_threshold,df,x_columns,y_column,feature_types,hyper_parameters_dict):
         for i in range(self.num_of_iterations):
             print(i)
             num_of_estimators=hyper_parameters_dict['number_of_estimators']
-            filter_approach=hyper_parameters_dict['filter_approach']
             result_dict=dict(hyper_parameters_dict)
             result_dict['iteration']=i
             trainAndValidation_x, trainAndValidation_y, test_x, test_y = divide_to_train_test(df, x_columns, y_column)
@@ -75,10 +57,7 @@ class ExperimentSetting():
             #Create the conjunction set
             start_temp = datetime.datetime.now()
             cs = ConjunctionSet(x_columns, train_x,validation_x,validation_y, rf, feature_types,
-                                hyper_parameters_dict['max_number_of_branches'],
-                                filter_approach,exclusion_starting_point=hyper_parameters_dict['exclusion_start_point'],
-                                minimal_forest_size=hyper_parameters_dict['minimum_estimators'],
-                                exclusion_threshold=hyper_parameters_dict['exclusion_threshold'])
+                                hyper_parameters_dict['max_number_of_branches'])
             result_dict['conjunction set training time'] = (datetime.datetime.now() - start_temp).total_seconds()
             result_dict['number of branches per iteration'] = cs.number_of_branches_per_iteration
             result_dict['number_of_branches'] = len(cs.conjunctionSet)
@@ -91,7 +70,7 @@ class ExperimentSetting():
             df_dict = {}
             for col in branches_df.columns:
                 df_dict[col] = branches_df[col].values
-            new_model = Node([True]*len(branches_df),hyper_parameters_dict['parallel'])
+            new_model = Node([True]*len(branches_df))
             new_model.split(df_dict)
             result_dict['new model training time'] = (datetime.datetime.now() - start_temp).total_seconds()
 
