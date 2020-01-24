@@ -4,10 +4,11 @@ import pandas as pd
 from statsmodels.distributions.empirical_distribution import ECDF
 from scipy.stats import entropy
 from pruningFunctions import *
+import random
 
 class ConjunctionSet():
     def __init__(self,feature_names,original_data, pruning_x, pruning_y,
-                 model, feature_types, amount_of_branches_threshold,filter_approach='probability', exclusion_starting_point=10,
+                 model, feature_types, amount_of_branches_threshold,filter_approach='probability', exclusion_starting_point=5,
                  minimal_forest_size=10,exclusion_threshold=0.8):
         self.amount_of_branches_threshold = amount_of_branches_threshold
         self.model = model
@@ -55,14 +56,15 @@ class ConjunctionSet():
         excluded_branches=[]
         for i,branch_list in enumerate(self.branches_lists[1:]):
             print('Iteration '+str(i+1)+": "+str(len(conjunctionSet))+" conjunctions")
-            conjunctionSet=self.merge_branch_with_conjunctionSet(branch_list,conjunctionSet)
+            filter = False if i==len(self.branches_lists[1:]) else True
+            conjunctionSet=self.merge_branch_with_conjunctionSet(branch_list,conjunctionSet,filter=filter)
             #print('i='+str(i))
-            if i >= self.exclusion_starting_point:
+            if i >= self.exclusion_starting_point and len(conjunctionSet)>0.8*self.amount_of_branches_threshold:
                 conjunctionSet,this_iteration_exclusions=self.exclude_branches_from_cs(conjunctionSet,self.exclusion_threshold)
                 excluded_branches.extend(this_iteration_exclusions)
-                #print('Number of exclusions: '+str(len(excluded_branches)))
-                #print('Number of remained: '+str(len(conjunctionSet)))
+
         self.conjunctionSet=excluded_branches+conjunctionSet
+        print('Final CS size: '+str(len(self.conjunctionSet)))
     def exclude_branches_from_cs(self,cs,threshold):
         filtered_cs=[]
         excludable_brancehs=[]
@@ -93,12 +95,13 @@ class ConjunctionSet():
         threshold=sorted(branches_metrics,reverse=True)[self.amount_of_branches_threshold-1]
         return [b for b,metric in zip(cs,branches_metrics) if metric >= threshold][:self.amount_of_branches_threshold]
 
-    def merge_branch_with_conjunctionSet(self,branch_list,conjunctionSet):
+    def merge_branch_with_conjunctionSet(self,branch_list,conjunctionSet,filter=True):
         new_conjunction_set=[]
         for b1 in conjunctionSet:
             new_conjunction_set.extend([b1.mergeBranch(b2) for b2 in branch_list if b1.contradictBranch(b2)==False])
         #print('number of branches before filterring: '+str(len(new_conjunction_set)))
-        new_conjunction_set=self.filter_conjunction_set(new_conjunction_set)
+        if filter:
+            new_conjunction_set=self.filter_conjunction_set(new_conjunction_set)
         #print('number of branches after filterring: ' + str(len(new_conjunction_set)))
         self.number_of_branches_per_iteration.append(len(new_conjunction_set))
         return new_conjunction_set

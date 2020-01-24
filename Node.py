@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 from SplittingFunctions import *
 from scipy.stats import entropy
 EPSILON=0.000001
@@ -34,10 +35,12 @@ class Node():
         return True
 
     def create_mask(self,df):
-        self.left_mask = [True if upper <= self.split_value  else False for upper in df[str(self.split_feature) + "_upper"]]
-        self.right_mask = [True if lower >= self.split_value else False for lower in df[str(self.split_feature) + '_lower']]
-        self.both_mask = [True if self.split_value < upper and self.split_value > lower else False for lower, upper in
-                     zip(df[str(self.split_feature) + '_lower'], df[str(self.split_feature) + "_upper"])]
+
+        self.left_mask = df[str(self.split_feature) + "_upper"] <= self.split_value
+        self.right_mask = df[str(self.split_feature) + '_lower'] >= self.split_value
+        self.both_mask = ((df[str(self.split_feature) + '_lower'] < self.split_value) & (df[str(self.split_feature) + "_upper"] > self.split_value))
+        #self.both_mask = [True if self.split_value < upper and self.split_value > lower else False for lower, upper in
+        #             zip(df[str(self.split_feature) + '_lower'], df[str(self.split_feature) + "_upper"])]
 
     def select_split_feature(self,df):
         feature_to_value={}
@@ -82,14 +85,9 @@ class Node():
             prediction, depth = self.right.predict_probas_and_depth(inst, training_df)
             return prediction, depth + 1
 
-    def node_probas(self,df):
-        class_probas = np.array([np.array(l) for l in df['probas'][self.mask]])
-        branches_probas = np.array(df['branch_probability'][self.mask]).reshape(np.sum(self.mask), 1)
-        class_probas= class_probas * (branches_probas+EPSILON)
-        class_probas = class_probas.mean(axis=0)
-        probas_sum=np.sum(class_probas)
-        class_probas = [i / probas_sum for i in class_probas]
-        return class_probas
+    def node_probas(self, df):
+        x = df['probas'][self.mask].mean()
+        return x/x.sum()
     def get_node_prediction(self,training_df):
         v=training_df['probas'][self.mask][0]
         v=[i/np.sum(v) for i in v]
@@ -100,11 +98,8 @@ class Node():
         else:
             return s.replace('lower', 'upper')
     def calculate_entropy(self,test_df,test_df_mask):
-        class_probas = np.array([np.array(l) / np.sum(l) for l in test_df['probas'][test_df_mask]])
-        class_probas = class_probas.mean(axis=0)
-        probas_sum = np.sum(class_probas)
-        class_probas = [i / probas_sum for i in class_probas]
-        return entropy(class_probas)
+        x = test_df['probas'][test_df_mask].mean()
+        return entropy(x/x.sum())
     def count_depth(self):
         if self.right==None:
             return 1

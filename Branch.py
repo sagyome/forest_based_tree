@@ -112,7 +112,7 @@ class Branch:
             features[str(feature)+'_lower']=lower_value
         features['number_of_samples']=self.number_of_samples
         features['branch_probability'] = self.calculate_branch_probability_by_ecdf(ecdf)
-        features['probas']=self.label_probas
+        features['probas']=np.array(self.label_probas)
         return  features
 
     def calculate_branch_probability_by_ecdf(self, ecdf):

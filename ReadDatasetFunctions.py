@@ -11,13 +11,39 @@ def read_iris_data():
     feature_types = ['float']*4
     x_columns=iris.feature_names
     return data,x_columns,y_column,feature_types
+
+def dummify_data(data,feature_cols, label_col):
+    """
+    This function identify categorical features and convert them into multiple binary features (one for each category)
+
+    :param data: pandas dataframe
+    :param feature_cols: feature names
+    :param label_col: label column name
+    :return: pandas dataframe with dummy features, names of the new features
+    """
+
+    #The following line identifies the categorical features in the dataset
+    char_cols = data[feature_cols].dtypes.pipe(lambda x: x[x == 'object']).index
+
+    #convert the categorical features to multiple dummy variables and add them to the dataframe
+    for col in char_cols:
+        dummies = pd.get_dummies(data[col])
+        dummies.columns = [col + '=' + category for category in dummies.columns]
+        data = pd.concat([data, dummies], axis=1)
+
+    #Remove the original categorical features from the dataframe
+    data = data.drop(char_cols,axis=1)
+    feature_cols = [col for col in data.columns if col != label_col]
+    return data, feature_cols
+
 def read_winery_data():
     x_columns=['Alcohol','Malic acid','Ash','Alcalinity of ash','Magnesium',
                                      'Total phenols','Flavanoids','Nonflavanoid phenols','Proanthocyanins',
                                     'Color intensity','Hue','OD280/OD315 of diluted wines','Proline']
     y_column='class'
     data = pd.read_csv("datasets/wine.data",names=[y_column]+x_columns)
-    feature_types = ['float'] * 4 + ['int'] + ['float'] * 7 + ['int']
+    #feature_types = ['float'] * 4 + ['int'] + ['float'] * 7 + ['int']
+    feature_types = ['float']*len(x_columns)
     return data, x_columns, y_column,feature_types
 def read_breast_cancer_data():
     x_columns = ['Clump_thickness', 'Uniformity of Cell Size', 'Uniformity of Cell Shape',
@@ -29,7 +55,7 @@ def read_breast_cancer_data():
     data = data[data['Bare Nuclei'] != '?']
     data['Bare Nuclei'] = [int(i) for i in data['Bare Nuclei']]
     return data, x_columns, y_column, feature_types
-def read_tic_tac_toe_dataset():
+def read_tic_tac_toe_dataset1():
     x_columns=['top - left - square','top - middle - square','top - right - square','middle - left - square',
                'middle - middle - square','middle - right - square','bottom - left - square','bottom - middle - square','bottom - right - square']
     y_column='class'
@@ -41,11 +67,20 @@ def read_tic_tac_toe_dataset():
     data=dv_data
     feature_types = ['int']*len(dv.feature_names_)
     return data, dv.feature_names_, y_column, feature_types
+def read_tic_tac_toe_dataset():
+    feature_cols=['top - left - square','top - middle - square','top - right - square','middle - left - square',
+               'middle - middle - square','middle - right - square','bottom - left - square','bottom - middle - square','bottom - right - square']
+    label_col='class'
+    data=pd.read_csv('datasets/tic-tac-toe.data',names=feature_cols+[label_col])
+    data, feature_cols = dummify_data(data, feature_cols, label_col)
+    feature_types = ['int'] * len(feature_cols)
+    return data, feature_cols, label_col, feature_types
 def read_australian():
     x_columns = ["A" + str(i) for i in range(14)]
     y_column='class'
     feature_types = ['int', 'float', 'float', 'int', 'int', 'int', 'float', 'int', 'int', 'int', 'int', 'int', 'int',
                      'int', 'int']
+    feature_types = ['float']*len(x_columns)
     data = pd.read_csv("datasets/australian.dat", sep=" ", names=x_columns+['class'])
     return data,x_columns,y_column,feature_types
 def read_nurse():
@@ -121,7 +156,8 @@ def read_pima():
     x_columns = ['x'+str(i) for i in range(8)]
     y_column = 'class'
     data = pd.read_csv('datasets/pima.scv', names=x_columns+[y_column])
-    feature_types = ['int']*5+['float']*2+['int']
+    #feature_types = ['int']*5+['float']*2+['int']
+    feature_types = ['float']*len(x_columns)
     return data,x_columns,y_column,feature_types
 def read_letter():
     x_columns = ['x'+str(i) for i in range(16)]
@@ -208,9 +244,10 @@ def read_credit():
     dv_data = dv.fit_transform([dict(row) for index, row in data[x_columns].iterrows()])
     dv_data = pd.DataFrame(dv_data.toarray(), columns=dv.feature_names_)
     dv_data[y_column] = data[y_column]
-    feature_types = ['int' if i not in ['x1','x2','x7','x13'] else float for i in dv.feature_names_]
+    #feature_types = ['int' if i not in ['x1','x2','x7','x13'] else float for i in dv.feature_names_]
     data = dv_data
     data = data[data['class'].apply(lambda x: isinstance(x, str))]
+    feature_types = ['float'] * len(dv.feature_names_)
     return data, dv.feature_names_, y_column, feature_types
 def read_ctherapy():
     data = pd.read_csv('datasets/cryotherapy.csv')
@@ -362,7 +399,7 @@ def read_biodeg():
     x_columns = ['x' + str(i) for i in range(41)]
     y_column = 'class'
     data = pd.read_csv('datasets/biodeg.txt', sep=';', names=x_columns + [y_column])
-    feature_types = ['float' if isinstance(data[col].values[0], float) else 'int' for col in data.columns]
+    feature_types = ['float']*len(x_columns)
     return data, x_columns, y_column, feature_types
 def read_seismic():
     dv = DictVectorizer()
@@ -388,11 +425,52 @@ def read_ecoli():
     x_columns = x_columns[1:]
     feature_types = ['float']*len(x_columns)
     return data, x_columns, y_column, feature_types
+def read_divorce():
+    data = pd.read_csv('datasets/divorce.csv',sep=';')
+    x_columns = data.columns[:-1]
+    y_column = data.columns[-1]
+    feature_types = len(x_columns)*['float']
+    return data, x_columns, y_column, feature_types
+
+def read_acute_inflam():
+    path = 'datasets/acute.csv'
+    data = pd.read_csv(path,header=None)
+    data = data[data.columns[:-1]]
+    data.columns = ['x'+str(i) for i in data.columns[:-1]]+['class']
+    for col in data.columns[1:-1]:
+        data[col] = data[col].apply(lambda x: x=='yes').astype(int)
+    feature_cols = data.columns[:-1]
+    label_col = 'class'
+    feature_types = ['float']+['int']*5
+    return data,feature_cols,label_col,feature_types
+
+def read_acute_nephritis():
+    path = 'datasets/acute.csv'
+    data = pd.read_csv(path,header=None)
+    new_cols = [0,1,2,3,4,5,7]
+    data = data[new_cols]
+    data.columns = ['x'+str(i) for i in data.columns[:-1]]+['class']
+    for col in data.columns[1:-1]:
+        data[col] = data[col].apply(lambda x: x=='yes').astype(int)
+    feature_cols = data.columns[:-1]
+    label_col = 'class'
+    feature_types = ['float']+['int']*5
+    return data,feature_cols,label_col,feature_types
+def read_hayes_roth():
+    data = pd.read_csv('datasets/hayes-roth.data',names=['name','hobby','age','edu','martial_status','class'])
+    data.drop(columns = 'name',inplace=True)
+    feature_cols = data.columns
+    label_col = 'class'
+    feature_types = ['float']*len(feature_cols)
+    return data,feature_cols,label_col,feature_types
+
 def get_dataset_by_string(s):
     if s=='iris':
         return read_iris_data()
     elif s=='winery':
         return read_winery_data()
+    elif s=='divorce':
+        return read_divorce()
     elif s=='breast cancer':
         return read_breast_cancer_data()
     elif s == 'aust_credit':
@@ -469,3 +547,9 @@ def get_dataset_by_string(s):
         return read_abalone()
     elif s=='ecoli':
         return read_ecoli()
+    elif s=='acute-inflam':
+        return read_acute_inflam()
+    elif s=='acute-nephitis':
+        return read_acute_nephritis()
+    elif s=='hayes-roth':
+        return read_hayes_roth()
